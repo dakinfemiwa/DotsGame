@@ -5,6 +5,7 @@ from tkinter import *
 import random
 import threading
 import time
+import math
 import queue
 
 #INFO
@@ -44,6 +45,8 @@ class Dots:
             self.dots[self.dotNo].append(self.dot)
             self.dots[self.dotNo].append(self.xValue)
             self.dots[self.dotNo].append(self.yValue)
+            self.dots[self.dotNo].append(self.xValue + 10)
+            self.dots[self.dotNo].append(self.yValue + 10)
 
         self.vacuumX = 250
         self.vacuumY = 500
@@ -53,7 +56,7 @@ class Dots:
         self.vacuum = self.DotsCanvas.create_oval(self.vacuumX, self.vacuumY, self.vacuumX + self.vacuumSize, self.vacuumY + self.vacuumSize, fill="#FFFFFF", outline="#FFFFFF")
 
 
-        #self.thread1 = threading.Thread(target=self.move).start()
+        self.thread1 = threading.Thread(target=self.move).start()
         self.thread2 = threading.Thread(target=self.check).start()
         self.thread3 = threading.Thread(target=self.DotsWindow.bind("<Key>", self.vacuumMove)).start()
         self.thread4 = threading.Thread(target=self.DotsWindow.mainloop()).start()
@@ -66,22 +69,42 @@ class Dots:
                 if self.currentDots != len(self.dots):
                     self.currentDots = len(self.dots)
                     print(str(len(self.dots)) + " Left")
-                    print(self.dots)
-                if (((self.vacuumCoordinates[0] - self.dots[self.dotNO][1]) > -(self.vacuumSize)) and ((self.vacuumCoordinates[0] - self.dots[self.dotNO][1]) < (self.vacuumSize))) and (((self.vacuumCoordinates[1] - self.dots[self.dotNO][2]) < (self.vacuumSize)) and ((self.vacuumCoordinates[1] - self.dots[self.dotNO][2]) > -(self.vacuumSize))):
+                    #print(self.dots)
+
+                self.contact = False
+
+                self.vacuumCentre = [self.vacuumCoordinates[0] + (self.vacuumSize // 2), self.vacuumCoordinates[1] + (self.vacuumSize // 2)]
+                self.dotsCentre = [self.dots[self.dotNO][1] + 5, self.dots[self.dotNO][2] + 5]
+
+                for self.angle2 in range(0, 360):
+                    d2x = 5 * math.cos(self.angle2)
+                    d2y = 5 * math.sin(self.angle2)
+                    v2x = self.dotsCentre[0] + d2x
+                    v2y = self.dotsCentre[1] + d2y
+
+                    self.checker = ((v2x - float(self.vacuumCentre[0])) ** 2) + ((v2y - float(self.vacuumCentre[1])) ** 2)
+
+                    if self.checker <= (self.vacuumSize ** 2):
+                        self.contact = True
+                                        
+                if self.contact == True:
                     self.DotsCanvas.delete(self.dots[self.dotNO][0])
                     self.dots.pop(self.dotNO)
+                    break;
+                
             if len(self.dots) == 1:
                 print("1 Left")
-                print(self.dots)
+                #print(self.dots)
                 dotNO = 0
                 if (((self.vacuumCoordinates[0] - self.dots[self.dotNO][1]) > -(self.vacuumSize)) and ((self.vacuumCoordinates[0] - self.dots[self.dotNO][1]) < (self.vacuumSize))) and (((self.vacuumCoordinates[1] - self.dots[self.dotNO][2]) < (self.vacuumSize)) and ((self.vacuumCoordinates[1] - self.dots[self.dotNO][2]) > -(self.vacuumSize))):
                     self.dot = 0
             if len(self.dots) == 0 or self.dot == 0:
+                self.DotsCanvas.delete(self.vacuum)
                 if self.level < 5:
                     self.level += 1
                     self.reset()
                 else:
-                    self.WinMessage = "GAMECOMPLET"
+                    self.WinMessage = "GAME COMPLETE"
                     self.font = "Ebrima 45"
                     self.WinLabel = Label(self.DotsCanvas, text=self.WinMessage, font=self.font, background=self.backgroundsWin[0], foreground="white")
                     self.WinLabel.place(relx=.25, rely=.1)
@@ -91,8 +114,8 @@ class Dots:
     def reset(self):
         self.dots = []
 
-        self.totalDots = (25 * (2 ^(self.level - 1)))
-        self.vacuumSize = (160 / (2 ^ (self.level - 2)))
+        self.totalDots = (25 * (2  ** (self.level - 1)))
+        self.vacuumSize = (160 / (2 ** (self.level - 2)))
 
         for self.dotNO in range(0, self.totalDots):
             self.dots.append([])
@@ -139,10 +162,13 @@ class Dots:
         while True:
             time.sleep(0.25)
             for self.dotNO1 in range(0, len(self.dots)):
+                try:
                     self.changeX = random.randint(-25, 25)
                     #self.dots[dotNO][1] += change
                     self.changeY = random.randint(-25, 25)
                     #self.dots[self.dotNO][2] += change
                     self.DotsCanvas.move(self.dots[self.dotNO1][0], self.changeX, self.changeY)
+                except IndexError:
+                    pass
 
 Dots()
