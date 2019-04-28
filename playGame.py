@@ -163,12 +163,23 @@ class Dots:
             time.sleep(0.25)
             for self.dotNO1 in range(0, len(self.dots)):
                 try:
-                    self.changeX = random.randint(-25, 25)
-                    #self.dots[dotNO][1] += change
+                    self.changeX = random.randint(-25, 25)                    
                     self.changeY = random.randint(-25, 25)
-                    #self.dots[self.dotNO][2] += change
+                    if self.dots[self.dotNO][1] + self.changeX < 1150 and self.dots[self.dotNO][2] + self.changeY < 600 and self.dots[self.dotNO][1] + self.changeX > 0 and self.dots[self.dotNO][2] + self.changeY > 0:
+                        self.dots[self.dotNO][1] += self.changeX
+                        self.dots[self.dotNO][2] += self.changeY
+                    else:
+                        if self.dots[self.dotNO][1] + self.changeX > 1150 or self.dots[self.dotNO][1] + self.changeX < 0:
+                            self.changeX = -self.changeX
+                            self.dots[self.dotNO][1] += self.changeX
+                            self.dots[self.dotNO][2] += self.changeY
+                        elif self.dots[self.dotNO][2] + self.changeY > 600 or self.dots[self.dotNO][2] + self.changeY < 0:
+                            self.changeY = -self.changeY
+                            self.dots[self.dotNO][2] += self.changeY
+                            self.dots[self.dotNO][1] += self.changeX
+                            
                     self.DotsCanvas.move(self.dots[self.dotNO1][0], self.changeX, self.changeY)
                 except IndexError:
-                    pass
+                    break
 
 Dots()
